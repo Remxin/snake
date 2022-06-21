@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./style/style.css">
+</head>
+
+<body>
+    <div id="main">
+
+    </div>
+    <script>
+
+        let gameSpeed = 200
+        let direction = "down"
+        let snake;
+        let snakeLen = 1
+        let fruit
+        let speedMultipler = 0
+        let snakeMoveInterval
+        let snakeTail
+
+        const initSnake = () => {
+            const snakeField = document.getElementById('p0910')
+            snake = snakeField
+
+            snakeField.innerHTML = 1
+            snakeField.style.backgroundColor = "rgb(105, 179, 87)"
+        }
+        const initField = () => {
+            let wholeField = document.createElement('div')
+            wholeField.setAttribute("id", "main-field")
+            for (let i = 0; i < 20; i++) {
+                for (let j = 0; j < 20; j++) {
+                    let x = i < 10 ? "0" + i : i
+                    let y = j < 10 ? "0" + j : j
+                    let field = document.createElement('field')
+                    field.setAttribute('id', `p${x}${y}`)
+                    field.value = 0
+                    field.innerHTML = field.value
+                    wholeField.appendChild(field)
+                }
+            }
+            document.getElementById('main').appendChild(wholeField)
+        }
+
+        const moveSnake = () => {
+            const snakeId = snake.id
+            const actualY = snakeId.charAt(1) + snakeId.charAt(2)
+            const actualX = snakeId.charAt(3) + snakeId.charAt(4)
+            let nextId = "p";
+
+            let nextX;
+            let nextY
+            let headDegRot;
+            switch (direction) {
+                case "right":
+                    nextX = (+actualX + 1)
+                    nextX < 10 ? nextX = "0" + nextX : nextX + ""
+                    nextId += actualY + "" + nextX
+                    headDegRot = 90
+                    break;
+                case "left":
+                    nextX = (+actualX - 1)
+                    nextX < 10 ? nextX = "0" + nextX : nextX + ""
+                    nextId += actualY + "" + nextX
+                    headDegRot = 270
+                    break;
+                case "up":
+                    nextY = (+actualY - 1)
+                    nextY < 10 ? nextY = "0" + nextY : nextY + ""
+                    nextId += nextY + "" + actualX
+                    headDegRot = 0
+
+                    break;
+                case "down":
+                    nextY = (+actualY + 1)
+                    nextY < 10 ? nextY = "0" + nextY : nextY + ""
+                    nextId += nextY + "" + actualX
+                    headDegRot = 180
+                    break;
+            }
+
+            checkCollision(nextId)
+            add1ToSnakeFields()
+            snake.classList.remove('snake-head')
+            snake = document.getElementById(nextId)
+            snake.innerHTML = 1
+
+            snake.classList.add("snake-head")
+            snake.style.transform = `rotate(${headDegRot}deg)`
+            checkIfSnakeAteApple()
+        }
+
+        const add1ToSnakeFields = () => {
+            for (let i = 0; i < 20; i++) {
+                for (let j = 0; j < 20; j++) {
+                    let y = i < 10 ? "0" + i : "" + i
+                    let x = j < 10 ? "0" + j : "" + j
+                    let id = "p" + y + x
+                    const field = document.getElementById(id)
+
+                    if (+field.innerHTML > 0) {
+                        field.innerHTML = +field.innerHTML + 1
+                    }
+                    if (+field.innerHTML > 1) {
+                        field.style.backgroundColor = "rgb(105, 179, 87)"
+                    }
+
+
+                    if (+field.innerHTML > snakeLen) {
+                        field.innerHTML = 0
+                        field.style.backgroundColor = "#fff"
+                    }
+                }
+            }
+        }
+
+        const generateFruit = () => {
+            // let isFruit = false
+            for (; ;) {
+                let x = Math.floor(Math.random() * 20)
+                let y = Math.floor(Math.random() * 20)
+                x < 10 ? x = "0" + x : x = "" + x
+                y < 10 ? y = "0" + y : y = "" + y
+                let id = "p" + y + x
+                const field = document.getElementById(id)
+                if (+field.innerHTML === 0) {
+                    field.innerHTML = -1
+                    field.style.transform = `rotate(0deg)`
+                    field.classList.add("fruit")
+                    fruit = field
+                    break
+                }
+            }
+        }
+
+        const checkIfSnakeAteApple = () => {
+            if (snake === fruit) {
+                fruit.style.backgroundColor = "rgb(105, 179, 87)"
+                fruit.classList.remove('fruit')
+                snakeLen++
+                speedMultipler++
+                increaseSpeed()
+                generateFruit()
+            }
+        }
+
+        const increaseSpeed = () => {
+            if (gameSpeed > 70) {
+                if (speedMultipler === 2) {
+                    speedMultipler = 0
+                    gameSpeed -= 10
+                    clearInterval(snakeMoveInterval)
+                    snakeMoveInterval = setInterval(() => {
+                        moveSnake()
+                    }, gameSpeed)
+                }
+            }
+        }
+
+        const checkCollision = (nextId) => {
+            if (!document?.getElementById(nextId) || +document.getElementById(nextId).innerHTML > 0) {
+                clearInterval(snakeMoveInterval)
+                alert(`Game Over! Długość węża: ${snakeLen}`)
+            }
+        }
+
+        window.onkeydown = (e) => {
+            const keyPressed = e.code
+            switch (keyPressed) {
+                case "KeyD":
+                    direction = "right"
+                    break;
+                case "KeyA":
+                    direction = "left"
+                    break;
+                case "KeyW":
+                    direction = "up"
+                    break;
+                case "KeyS":
+                    direction = "down"
+                    break;
+            }
+
+        }
+
+
+
+        initField()
+        initSnake()
+        // initSnakeMovement()
+        moveSnake()
+        generateFruit()
+        snakeMoveInterval = setInterval(() => {
+            moveSnake()
+        }, gameSpeed)
+    </script>
+</body>
+
+</html>
